@@ -10,11 +10,15 @@ typedef enum
     STAGE_GAME,
 } Stage;
 
+class Network;
+
 class Interface
 {
 public:
     void Initialize();
     void Draw();
+
+    void SetNetwork(Network* nwork) { pNetwork = nwork; };
 
     TTF_Font* GetFont() { return font; };
     SDL_Surface* GetSurface() { return SDest; };
@@ -23,6 +27,7 @@ public:
 
     void StoreChanged() { changed = true; };
 private:
+    Network* pNetwork;
     SDL_Surface* SDest;
     TTF_Font* font;
     bool changed;

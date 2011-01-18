@@ -11,8 +11,9 @@ int SDL_main(int argc, char *argv[])
     Interface* pInterface = new Interface;
     Network* pNetwork = new Network;
 
+    pInterface->SetNetwork(pNetwork);
+
     Piskvorky.SetInterface(pInterface);
-    Piskvorky.SetNetwork(pNetwork);
 
     return Piskvorky.OnExecute();
 }
@@ -48,8 +49,6 @@ int Application::OnExecute()
     Running = true;
 
     SDL_Event Event;
-
-    pNetwork->DoConnect();
 
     while(Running)
     {

@@ -28,7 +28,6 @@ public:
     Application() {};
 
     void SetInterface(Interface* iface) { pInterface = iface; };
-    void SetNetwork(Network* nwork) { pNetwork = nwork; };
 
     bool OnInit();
     int  OnExecute();
@@ -39,7 +38,6 @@ public:
 private:
     SDL_Surface* DrawSurface;
     Interface* pInterface;
-    Network* pNetwork;
     bool Running;
 };
 

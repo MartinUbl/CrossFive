@@ -237,14 +237,24 @@ void Network::DoConnect(std::string phost, unsigned int pport)
 
 void HandlePacket(GamePacket* packet, TCPsocket sock)
 {
+    Interface* pIf = Piskvorky.GetInterface();
+
     switch(packet->GetOpcode())
     {
         case SMSG_LOGIN_RESPONSE:
             {
-                unsigned int nsize;
+                uint8 loginstate;
+                uint32 nsize;
 
+                *packet >> loginstate;
                 *packet >> nsize;
                 const char* name = packet->readstr(nsize);
+
+                if(loginstate != OK)
+                {
+                    //Login failed, return
+                    return;
+                }
 
                 gStore.SetName(name);
 
@@ -252,11 +262,17 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                 data << uint32(0);
                 SendPacket(sock,&data);
 
+                pIf->SetStage(STAGE_CONNECTING);
+                pIf->StoreChanged();
+
                 break;
             }
         case SMSG_PLAYER_JOINED:
             {
-                gStore.SetName("V prdeli je tma");
+                if(pIf->GetStage() == STAGE_CONNECTING)
+                {
+                    gStore.SetName("Fakooof");
+                }
                 break;
             }
         default:

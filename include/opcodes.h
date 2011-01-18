@@ -10,4 +10,7 @@ enum Opcodes
     SMSG_PLAYER_JOINED             = 0x04,
 };
 
+#define FAIL 0
+#define OK 1
+
 #endif

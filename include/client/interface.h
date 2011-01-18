@@ -25,7 +25,11 @@ public:
 
     void DrawTextRq(int x, int y, const char* text, ...);
 
+    void MouseClick(int x, int y, bool left = true);
+
     void StoreChanged() { changed = true; };
+    void SetStage(Stage nstage) { stage = nstage; };
+    Stage GetStage() { return stage; };
 private:
     Network* pNetwork;
     SDL_Surface* SDest;

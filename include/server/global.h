@@ -16,12 +16,19 @@ typedef struct {
 	char *name;
 } Client;
 
+//main.cpp - functions
 extern char *getMsg(TCPsocket sock, char **buf);
 extern int putMsg(TCPsocket sock, char *buf);
 extern char *mformat(char *format,...);
 extern void send_all(char *buf);
 extern char *strsep(char **stringp, const char *delim);
+extern void remove_client(int i);
 
+//gameplay.cpp - functions
 extern void ProcessPacket(char* message, Client* pClient);
+
+//main.cpp - variables
+extern Client *clients;
+extern int num_clients;
 
 #endif

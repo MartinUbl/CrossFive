@@ -79,12 +79,12 @@ void Application::OnEvent(SDL_Event* Event)
         case SDL_QUIT:
             Running = false;
             break;
-        /*case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONDOWN:
             if(Event->button.button == SDL_BUTTON_LEFT)
-                defInterface->MouseClick(Event->button.x, Event->button.y, true);
+                pInterface->MouseClick(Event->button.x, Event->button.y, true);
             else
-                defInterface->MouseClick(Event->button.x, Event->button.y, false);
-            break;*/
+                pInterface->MouseClick(Event->button.x, Event->button.y, false);
+            break;
     }
 }
 

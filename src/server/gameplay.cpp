@@ -138,7 +138,10 @@ void HandlePacket(GamePacket* packet, Client* pClient)
                 pClient->name = (char*)name;
 
                 GamePacket data(SMSG_LOGIN_RESPONSE);
-                data << (uint8)OK;
+                if(!strcmp(versionstr,VERSION_STR))
+                    data << (uint8)OK;
+                else
+                    data << (uint8)FAIL;
                 data << (uint32)strlen(name);
                 data << name;
                 SendPacket(pClient->sock, &data);

@@ -4,8 +4,8 @@
 int net_thread_main(void *);
 int local_thread_main(void *);
 
-int done=0;
-SDL_Thread *net_thread=NULL, *local_thread=NULL;
+int done = 0;
+SDL_Thread *net_thread = NULL, *local_thread = NULL;
 
 char *getMsg(TCPsocket sock, char **buf)
 {
@@ -207,11 +207,9 @@ void Network::DoConnect(std::string phost, unsigned int pport)
 		return;
 	}
 
-    std::string clientversionstr = "v1b";
-
     GamePacket data(CMSG_LOGIN);
-    data << uint32(strlen(clientversionstr.c_str()));
-    data << clientversionstr.c_str();
+    data << uint32(strlen(VERSION_STR));
+    data << VERSION_STR;
     data << uint32(strlen(name));
     data << name;
     SendPacket(sock,&data);

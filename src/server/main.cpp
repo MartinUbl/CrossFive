@@ -286,6 +286,8 @@ int main(int argc, char **argv)
     printf("-------======  server   ======-------\n");
     printf("-------------===========-------------\n");
     printf("\n");
+    printf("Version string: %s\n",VERSION_STR);
+    printf("\n");
 
     printf("Initializing SDL... ");
 	if(SDL_Init(0) == -1)

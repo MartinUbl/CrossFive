@@ -25,7 +25,7 @@ extern char *strsep(char **stringp, const char *delim);
 extern void remove_client(int i);
 
 //gameplay.cpp - functions
-extern void ProcessPacket(char* message, Client* pClient);
+extern void ProcessPacket(const char* message, Client* pClient);
 
 //main.cpp - variables
 extern Client *clients;

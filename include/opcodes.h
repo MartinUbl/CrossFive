@@ -1,6 +1,9 @@
 #ifndef __OPCODES_H_
 #define __OPCODES_H_
 
+#define FAIL 0
+#define OK 1
+
 enum Opcodes
 {
     MSG_NONE                       = 0x00,
@@ -10,7 +13,11 @@ enum Opcodes
     SMSG_PLAYER_JOINED             = 0x04,
 };
 
-#define FAIL 0
-#define OK 1
+typedef enum
+{
+    POS_PLAYER,
+    POS_OPONNENT,
+    POS_SPECTATOR,
+} ClientPositions;
 
 #endif

@@ -16,6 +16,7 @@ int SendPacket(TCPsocket sock, GamePacket* packet)
     buff[6] = LOPART32(packet->GetSize())/0x100;
     buff[7] = LOPART32(packet->GetSize())%0x100;
 
+    packet->SetPos(0);
     for(size_t i = 0; i < packet->GetSize(); i++)
     {
         *packet >> buff[8+i];
@@ -29,27 +30,29 @@ int SendPacket(TCPsocket sock, GamePacket* packet)
 
     int len, result;
 
-	len=psize+1;
+	len = psize + 1;
 
-	len=SDL_SwapBE32(len);
+	len = SDL_SwapBE32(len);
 
-	result=SDLNet_TCP_Send(sock,&len,sizeof(len));
-	if(result<sizeof(len)) {
+	result = SDLNet_TCP_Send(sock,&len,sizeof(len));
+	if(result < sizeof(len))
+    {
 		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
 			printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
-		return(0);
+		return 0;
 	}
 
-	len=SDL_SwapBE32(len);
+	len = SDL_SwapBE32(len);
 	
-	result=SDLNet_TCP_Send(sock,buf,len);
-	if(result<len) {
+	result = SDLNet_TCP_Send(sock,buf,len);
+	if(result < len)
+    {
 		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
 			printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
-		return(0);
+		return 0;
 	}
 
-    return(result);
+    return result;
 }
 
 void SendGlobalPacket(GamePacket* packet, Client* pExcept = NULL)
@@ -68,6 +71,7 @@ void SendGlobalPacket(GamePacket* packet, Client* pExcept = NULL)
     buff[6] = LOPART32(packet->GetSize())/0x100;
     buff[7] = LOPART32(packet->GetSize())%0x100;
 
+    packet->SetPos(0);
     for(size_t i = 0; i < packet->GetSize(); i++)
     {
         *packet >> buff[8+i];
@@ -95,7 +99,7 @@ void SendGlobalPacket(GamePacket* packet, Client* pExcept = NULL)
         len = SDL_SwapBE32(len);
 
         result = SDLNet_TCP_Send(clients[cindex].sock,&len,sizeof(len));
-        if(result<sizeof(len))
+        if(result < sizeof(len))
         {
             if(SDLNet_GetError() && strlen(SDLNet_GetError()))
                 printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
@@ -143,15 +147,23 @@ void HandlePacket(GamePacket* packet, Client* pClient)
         case CMSG_HELLO:
             {
                 GamePacket data(SMSG_PLAYER_JOINED);
+                data << uint32(POS_OPONNENT);
                 data << uint32(strlen(pClient->name));
                 data << pClient->name;
                 SendGlobalPacket(&data,pClient);
+
+                //fake packet --> debug
+                GamePacket data2(SMSG_PLAYER_JOINED);
+                data2 << uint32(POS_OPONNENT);
+                data2 << uint32(4);
+                data2 << "abcd";
+                SendPacket(pClient->sock, &data2);
             }
             break;
     }
 }
 
-void ProcessPacket(char* message, Client* pClient)
+void ProcessPacket(const char* message, Client* pClient)
 {
     unsigned int opcode, size;
 

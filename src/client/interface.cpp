@@ -94,15 +94,29 @@ bool inRect(uint32 x, uint32 y, uint32 x1, uint32 x2, uint32 y1, uint32 y2)
 
 void Interface::MouseClick(int x, int y, bool left)
 {
-    if(inRect(x,y,60,160,80,105))
+    if(inRect(x,y,60,160,80,105) && stage == STAGE_MENU)
     {
         //Nova hra
         pNetwork->DoConnect();
     }
-    if(inRect(x,y,60,160,130,155))
+    if(inRect(x,y,60,160,130,155) && stage == STAGE_MENU)
     {
         //Konec
         exit(0);
+    }
+    if(inRect(x,y,10+2,10+2+2+40*(2+15),45+2,45+2+40*(2+15)) && stage == STAGE_GAME)
+    {
+        //Tah
+        //if(game is in progress && i am not spectator && is my turn)
+        unsigned char field_x, field_y;
+
+        field_x = (unsigned char)(int(x-10) / int(2+15));
+        field_y = (unsigned char)(int(y-45) / int(2+15));
+
+        GamePacket data(CMSG_TURN);
+        data << field_x;
+        data << field_y;
+        SendToServer(&data);
     }
 }
 

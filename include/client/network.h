@@ -2,6 +2,7 @@
 #define __NETWORK_H_
 
 #include <global.h>
+#include <../shared.h>
 
 #define DEFAULT_IP "127.0.0.1"
 #define DEFAULT_PORT 555
@@ -24,6 +25,7 @@ private:
 };
 
 extern SDL_Thread *net_thread;
-extern SDL_Thread *local_thread;
+
+extern int SendToServer(GamePacket* packet);
 
 #endif

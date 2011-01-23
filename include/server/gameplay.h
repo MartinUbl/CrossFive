@@ -7,6 +7,7 @@ typedef struct
 {
     Client* member;
     uint8 marker; //0 krizky, 1 kolecka
+    bool isTurn; //je na tahu?
 } TGamePair;
 
 typedef struct

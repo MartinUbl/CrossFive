@@ -4,8 +4,10 @@
 int net_thread_main(void *);
 int local_thread_main(void *);
 
+TCPsocket serversock;
+
 int done = 0;
-SDL_Thread *net_thread = NULL, *local_thread = NULL;
+SDL_Thread *net_thread = NULL;
 
 char *getMsg(TCPsocket sock, char **buf)
 {
@@ -156,6 +158,11 @@ int SendPacket(TCPsocket sock, GamePacket* packet)
     return result;
 }
 
+int SendToServer(GamePacket* packet)
+{
+    return SendPacket(serversock,packet);
+}
+
 Network::Network()
 {
     connected = false;
@@ -207,6 +214,8 @@ void Network::DoConnect(std::string phost, unsigned int pport)
 		return;
 	}
 
+    serversock = sock;
+
     GamePacket data(CMSG_LOGIN);
     data << uint32(strlen(VERSION_STR));
     data << VERSION_STR;
@@ -214,7 +223,6 @@ void Network::DoConnect(std::string phost, unsigned int pport)
     data << name;
     SendPacket(sock,&data);
 
-    local_thread = SDL_CreateThread(local_thread_main,sock);
     net_thread = SDL_CreateThread(net_thread_main,sock);
 
     //SDL_WaitThread(local_thread,NULL);
@@ -281,6 +289,20 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                 //TODO: handle allowing to play
             }
             break;
+        case SMSG_SET_TURN:
+            {
+                //TODO: implement
+            }
+            break;
+        case SMSG_TURN:
+            {
+                unsigned char field_x, field_y, symbol;
+                *packet >> field_x >> field_y >> symbol;
+
+                gStore.SetFieldValue(field_x, field_y, symbol);
+                pIf->StoreChanged();
+            }
+            break;
         default:
             MessageBox(0,"Prijat neznamy opkod","Chyba",0);
             break;
@@ -307,57 +329,6 @@ void ProcessPacket(char* message, TCPsocket sock)
         packet << (unsigned char)message[8+i];
 
     HandlePacket(&packet, sock);
-}
-
-int local_thread_main(void *data)
-{
-	TCPsocket sock = (TCPsocket)data;
-#ifndef _MSC_VER
-	fd_set fdset;
-	int result;
-#endif
-	char message[MAXLEN];
-
-	while(!net_thread && !done)
-		SDL_Delay(1);
-
-	while(!done)
-	{
-#ifndef _MSC_VER
-		FD_ZERO(&fdset);
-		FD_SET(fileno(stdin),&fdset);
-		
-		result=select(fileno(stdin)+1, &fdset, NULL, NULL, NULL);
-		if(result==-1)
-		{
-			perror("select");
-			done=6;
-			break;
-		}
-
-		if(result && FD_ISSET(fileno(stdin),&fdset))
-		{
-#endif
-			if(!fgets(message,MAXLEN,stdin))
-			{
-				done = 7;
-				break;
-			}
-
-			while(strlen(message) && strchr("\n\r\t ",message[strlen(message)-1]))
-				message[strlen(message)-1] = '\0';
-
-			if(strlen(message))
-				putMsg(sock,message);
-#ifndef _MSC_VER
-		}
-#endif
-	}
-	if(!done)
-		done = 1;
-
-	SDL_KillThread(net_thread);
-	return 0;
 }
 
 int net_thread_main(void *data)
@@ -410,6 +381,5 @@ int net_thread_main(void *data)
 	if(!done)
 		done = 1;
 
-	SDL_KillThread(local_thread);
 	return 0;
 }

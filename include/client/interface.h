@@ -60,6 +60,7 @@ public:
     unsigned int GetMyGUID() { return myguid; };
 
     unsigned char GetFieldValue(unsigned char x, unsigned char y) { return field[x][y]; };
+    void SetFieldValue(unsigned char x, unsigned char y, unsigned char val) { field[x][y] = val; };
 private:
     std::string name;
     std::string oponnentname;

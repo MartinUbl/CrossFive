@@ -63,8 +63,6 @@ int Application::OnExecute()
 
     if(net_thread)
         SDL_KillThread(net_thread);
-    if(local_thread)
-        SDL_KillThread(local_thread);
 
     SDL_FreeSurface(DrawSurface);
     SDL_Quit();

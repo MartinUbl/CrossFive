@@ -7,6 +7,7 @@ GamePlayHandler::GamePlayHandler()
     {
         gamepair[i].member = NULL;
         gamepair[i].marker = 0;
+        gamepair[i].isTurn = false;
     }
 
     Game.inProgress = false;
@@ -201,6 +202,12 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 data << uint8(1);
                 SendGlobalPacket(&data);
 
+                gamepair[0].isTurn = true;
+
+                GamePacket data2(SMSG_SET_TURN);
+                data2 << pClient->guid;
+                SendGlobalPacket(&data2);
+
                 return; //remove after debug done
 
                 //Pokud uz je nejaky member ready
@@ -215,6 +222,12 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     data << gamepair[1].member->guid;
                     data << gamepair[1].marker;
                     SendGlobalPacket(&data);
+
+                    gamepair[0].isTurn = true;
+
+                    GamePacket data2(SMSG_SET_TURN);
+                    data2 << gamepair[0].member->guid;
+                    SendGlobalPacket(&data2);
                 }
                 //specialni pripad odpojeni klienta
                 else if(!gamepair[0].member && gamepair[1].member)
@@ -228,6 +241,12 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     data << gamepair[1].member->guid;
                     data << gamepair[1].marker;
                     SendGlobalPacket(&data);
+
+                    gamepair[0].isTurn = true;
+
+                    GamePacket data2(SMSG_SET_TURN);
+                    data2 << gamepair[0].member->guid;
+                    SendGlobalPacket(&data2);
                 }
                 //nikdo neni ready
                 else if(!gamepair[0].member && !gamepair[1].member)
@@ -235,6 +254,36 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     gamepair[0].member = pClient;
                     gamepair[0].marker = 0;
                 }
+            }
+            break;
+        case CMSG_TURN:
+            {
+                uint8 field_x, field_y, symbol;
+
+                *packet >> field_x >> field_y;
+
+                uint32 clguid = pClient->guid;
+                //odkomentovat po debugu
+                /*if(gamepair[0].member->guid == clguid)
+                    symbol = gamepair[0].marker;
+                else if(gamepair[1].member->guid == clguid)
+                    symbol = gamepair[1].marker;
+                else
+                    return;*/
+                symbol = 1;
+
+                if(field_x > 40 || field_y > 40)
+                    return;
+
+                //TODO: overit, zdali je tah platny
+
+                Game.field[field_x][field_y] = symbol+1; //posun v enum o 1
+
+                GamePacket data(SMSG_TURN);
+                data << field_x;
+                data << field_y;
+                data << symbol;
+                SendGlobalPacket(&data);
             }
             break;
     }

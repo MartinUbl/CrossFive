@@ -27,4 +27,11 @@ typedef enum
     POS_SPECTATOR,
 } ClientPositions;
 
+typedef enum
+{
+    EMPTY,
+    CROSS,
+    CIRCLE,
+} FieldState;
+
 #endif

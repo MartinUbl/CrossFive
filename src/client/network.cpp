@@ -230,11 +230,12 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
         case SMSG_LOGIN_RESPONSE:
             {
                 uint8 loginstate;
-                uint32 nsize;
+                uint32 nsize, sguid;
 
                 *packet >> loginstate;
                 *packet >> nsize;
                 const char* name = packet->readstr(nsize);
+                *packet >> sguid;
 
                 if(loginstate != OK)
                 {
@@ -242,6 +243,7 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                     return;
                 }
 
+                gStore.SetMyGUID(sguid);
                 gStore.SetName(name);
 
                 GamePacket data(CMSG_HELLO);

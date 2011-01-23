@@ -12,8 +12,9 @@
 #pragma warning(disable:4996)
 
 typedef struct {
-	TCPsocket sock;
-	char *name;
+    uint32 guid;
+    TCPsocket sock;
+    char *name;
 } Client;
 
 #include <gameplay.h>

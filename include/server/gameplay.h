@@ -9,6 +9,12 @@ typedef struct
     uint8 marker; //0 krizky, 1 kolecka
 } TGamePair;
 
+typedef struct
+{
+    bool inProgress;
+    uint8 field[20][20]; //herni pole 20x20? Upravit podle klienta
+} DefGame;
+
 class GamePlayHandler
 {
 public:

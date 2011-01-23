@@ -164,8 +164,9 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     data << (uint8)OK;
                 else
                     data << (uint8)FAIL;
-                data << (uint32)strlen(name);
+                data << uint32(strlen(name));
                 data << name;
+                data << uint32(pClient->guid);
                 SendPacket(pClient->sock, &data);
             }
             break;
@@ -187,19 +188,33 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
             break;
         case CMSG_READY_FOR_GAME:
             {
-                //Pokud uz je nejaky member pripojen
+                //Pokud uz je nejaky member ready
                 if(gamepair[0].member && !gamepair[1].member)
                 {
                     gamepair[1].member = pClient;
                     gamepair[1].marker = 1;
+
+                    GamePacket data(SMSG_GAME_START);
+                    data << gamepair[0].member->guid;
+                    data << gamepair[0].marker;
+                    data << gamepair[1].member->guid;
+                    data << gamepair[1].marker;
+                    SendGlobalPacket(&data);
                 }
                 //specialni pripad odpojeni klienta
                 else if(!gamepair[0].member && gamepair[1].member)
                 {
                     gamepair[0].member = pClient;
                     gamepair[0].marker = 0;
+
+                    GamePacket data(SMSG_GAME_START);
+                    data << gamepair[0].member->guid;
+                    data << gamepair[0].marker;
+                    data << gamepair[1].member->guid;
+                    data << gamepair[1].marker;
+                    SendGlobalPacket(&data);
                 }
-                //nikdo neni pripojen
+                //nikdo neni ready
                 else if(!gamepair[0].member && !gamepair[1].member)
                 {
                     gamepair[0].member = pClient;

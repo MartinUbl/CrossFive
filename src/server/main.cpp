@@ -5,6 +5,9 @@ Client *clients=NULL;
 int num_clients=0;
 TCPsocket server;
 
+//guid 0 = server, guid 1+ = klienti
+uint32 maxguid = 1;
+
 GamePlayHandler gGameplay;
 
 #define strcasecmp _stricmp
@@ -189,8 +192,10 @@ Client *add_client(TCPsocket sock, char *name)
 		return(NULL);
 	}
 	clients = (Client*)realloc(clients, (num_clients+1)*sizeof(Client));
+    clients[num_clients].guid = maxguid;
 	clients[num_clients].name = name;
 	clients[num_clients].sock = sock;
+    maxguid++;
 	num_clients++;
 
 	return (&clients[num_clients-1]);

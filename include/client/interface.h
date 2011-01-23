@@ -51,9 +51,14 @@ public:
     const char* GetName() { return name.c_str(); };
     void SetOponnentName(string newname);
     const char* GetOponnentName() { return oponnentname.c_str(); };
+
+    void SetMyGUID(unsigned int nguid) { myguid = nguid; };
+    unsigned int GetMyGUID() { return myguid; };
 private:
     std::string name;
     std::string oponnentname;
+
+    unsigned int myguid;
 };
 
 extern Store gStore;

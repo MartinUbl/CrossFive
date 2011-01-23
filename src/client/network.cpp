@@ -276,6 +276,11 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                 }
                 break;
             }
+        case SMSG_GAME_START:
+            {
+                //TODO: handle allowing to play
+            }
+            break;
         default:
             MessageBox(0,"Prijat neznamy opkod","Chyba",0);
             break;

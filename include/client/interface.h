@@ -24,6 +24,7 @@ public:
     SDL_Surface* GetSurface() { return SDest; };
 
     void DrawTextRq(int x, int y, const char* text, ...);
+    void DrawFieldElem(unsigned char x, unsigned char y, unsigned char symbol);
 
     void MouseClick(int x, int y, bool left = true);
 
@@ -45,6 +46,9 @@ public:
     Store()
     {
         name = "";
+        for(int i = 0; i < 40; i++)
+            for(int j = 0; j < 40; j++)
+                field[i][j] = 0;
     }
 
     void SetName(string newname);
@@ -54,11 +58,14 @@ public:
 
     void SetMyGUID(unsigned int nguid) { myguid = nguid; };
     unsigned int GetMyGUID() { return myguid; };
+
+    unsigned char GetFieldValue(unsigned char x, unsigned char y) { return field[x][y]; };
 private:
     std::string name;
     std::string oponnentname;
 
     unsigned int myguid;
+    unsigned char field[40][40];
 };
 
 extern Store gStore;

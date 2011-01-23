@@ -14,6 +14,28 @@ void Interface::Initialize()
     changed = true;
 }
 
+void Interface::DrawFieldElem(unsigned char x, unsigned char y, unsigned char symbol)
+{
+    uint32 realx, realy;
+
+    //10+2 kvuli ohraniceni, +2 kvuli tomu aby nesplyval
+    realx = 10+2+2+x*(15+2);
+    realy = 45+2+2+y*(15+2);
+
+    switch(symbol)
+    {
+    case 1: //krizek
+        Surface::DrawRect(SDest,realx,realy,11,11,SDL_MapRGB(SDest->format,255,0,0));
+        break;
+    case 2: //kolecko
+        Surface::DrawRect(SDest,realx,realy,11,11,SDL_MapRGB(SDest->format,0,255,0));
+        break;
+    default: //prazdno (0 a jine)
+        Surface::DrawRect(SDest,realx,realy,11,11,SDL_MapRGB(SDest->format,0,0,0));
+        break;
+    }
+}
+
 void Interface::Draw()
 {
     if(!changed)
@@ -42,6 +64,16 @@ void Interface::Draw()
         Surface::DrawFont(SDest,63,83,font,"Cekam na protihrace...");
         break;
     case STAGE_GAME:
+        Surface::DrawFont(SDest,10,25,font,"ID protihrace: %s",gStore.GetOponnentName());
+        Surface::DrawRect(SDest,10,45,2+40*(2+15),2,SDL_MapRGB(SDest->format,255,255,255));
+        Surface::DrawRect(SDest,10,45,2,2+40*(2+15),SDL_MapRGB(SDest->format,255,255,255));
+        for(int i = 0; i < 40; i++)
+        {
+            Surface::DrawRect(SDest,10,45+2+15+i*(2+15),2+40*(2+15),2,SDL_MapRGB(SDest->format,255,255,255));
+            Surface::DrawRect(SDest,10+2+15+i*(2+15),45,2,2+40*(2+15),SDL_MapRGB(SDest->format,255,255,255));
+            for(int j = 0; j < 40; j++)
+                DrawFieldElem(i,j,gStore.GetFieldValue(i,j));
+        }
         break;
     default:
         break;

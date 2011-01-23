@@ -12,7 +12,7 @@ typedef struct
 typedef struct
 {
     bool inProgress;
-    uint8 field[20][20]; //herni pole 20x20? Upravit podle klienta
+    uint8 field[40][40]; //herni pole 40x40
 } DefGame;
 
 class GamePlayHandler
@@ -27,6 +27,7 @@ public:
     void ProcessPacket(const char* message, Client* pClient);
 private:
     TGamePair* gamepair;
+    DefGame Game;
 };
 
 #endif

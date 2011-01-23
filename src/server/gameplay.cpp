@@ -8,6 +8,11 @@ GamePlayHandler::GamePlayHandler()
         gamepair[i].member = NULL;
         gamepair[i].marker = 0;
     }
+
+    Game.inProgress = false;
+    for(int i = 0; i < 40; i++)
+        for(int j = 0; j < 40; j++)
+            Game.field[i][j] = EMPTY;
 }
 
 GamePlayHandler::~GamePlayHandler()
@@ -188,6 +193,16 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
             break;
         case CMSG_READY_FOR_GAME:
             {
+                //fake packet --> debug
+                GamePacket data(SMSG_GAME_START);
+                data << pClient->guid;
+                data << uint8(0);
+                data << uint32(888);
+                data << uint8(1);
+                SendGlobalPacket(&data);
+
+                return; //remove after debug done
+
                 //Pokud uz je nejaky member ready
                 if(gamepair[0].member && !gamepair[1].member)
                 {

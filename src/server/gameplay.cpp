@@ -1,6 +1,28 @@
-#include <global.h>
+#include <gameplay.h>
 
-int SendPacket(TCPsocket sock, GamePacket* packet)
+GamePlayHandler::GamePlayHandler()
+{
+    gamepair = new TGamePair[2];
+    for(int i = 0; i < 2; i++)
+    {
+        gamepair[i].member = NULL;
+        gamepair[i].marker = 0;
+    }
+}
+
+GamePlayHandler::~GamePlayHandler()
+{
+    if(gamepair)
+    {
+        for(int i = 0; i < 2; i++)
+            if(gamepair[i].member)
+                delete gamepair[i].member;
+
+        delete gamepair;
+    }
+}
+
+int GamePlayHandler::SendPacket(TCPsocket sock, GamePacket* packet)
 {
     //celkova velikost + 4 bajty na ID opkodu + 4 bajty na velikost tela packetu
     size_t psize = packet->GetSize() + 4 + 4;
@@ -55,7 +77,7 @@ int SendPacket(TCPsocket sock, GamePacket* packet)
     return result;
 }
 
-void SendGlobalPacket(GamePacket* packet, Client* pExcept = NULL)
+void GamePlayHandler::SendGlobalPacket(GamePacket* packet, Client* pExcept)
 {
     //celkova velikost + 4 bajty na ID opkodu + 4 bajty na velikost tela packetu
     size_t psize = packet->GetSize() + 4 + 4;
@@ -122,7 +144,7 @@ void SendGlobalPacket(GamePacket* packet, Client* pExcept = NULL)
     }
 }
 
-void HandlePacket(GamePacket* packet, Client* pClient)
+void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
 {
     switch(packet->GetOpcode())
     {
@@ -145,8 +167,8 @@ void HandlePacket(GamePacket* packet, Client* pClient)
                 data << (uint32)strlen(name);
                 data << name;
                 SendPacket(pClient->sock, &data);
-                break;
             }
+            break;
         case CMSG_HELLO:
             {
                 GamePacket data(SMSG_PLAYER_JOINED);
@@ -163,10 +185,32 @@ void HandlePacket(GamePacket* packet, Client* pClient)
                 SendPacket(pClient->sock, &data2);
             }
             break;
+        case CMSG_READY_FOR_GAME:
+            {
+                //Pokud uz je nejaky member pripojen
+                if(gamepair[0].member && !gamepair[1].member)
+                {
+                    gamepair[1].member = pClient;
+                    gamepair[1].marker = 1;
+                }
+                //specialni pripad odpojeni klienta
+                else if(!gamepair[0].member && gamepair[1].member)
+                {
+                    gamepair[0].member = pClient;
+                    gamepair[0].marker = 0;
+                }
+                //nikdo neni pripojen
+                else if(!gamepair[0].member && !gamepair[1].member)
+                {
+                    gamepair[0].member = pClient;
+                    gamepair[0].marker = 0;
+                }
+            }
+            break;
     }
 }
 
-void ProcessPacket(const char* message, Client* pClient)
+void GamePlayHandler::ProcessPacket(const char* message, Client* pClient)
 {
     unsigned int opcode, size;
 

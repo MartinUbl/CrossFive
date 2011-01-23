@@ -41,6 +41,8 @@ void Interface::Draw()
         SetColor(255,255,255);
         Surface::DrawFont(SDest,63,83,font,"Cekam na protihrace...");
         break;
+    case STAGE_GAME:
+        break;
     default:
         break;
     }
@@ -75,5 +77,11 @@ void Interface::MouseClick(int x, int y, bool left)
 void Store::SetName(std::string newname)
 {
     name = newname.c_str();
+    Piskvorky.GetInterface()->StoreChanged(); 
+}
+
+void Store::SetOponnentName(std::string newname)
+{
+    oponnentname = newname.c_str();
     Piskvorky.GetInterface()->StoreChanged(); 
 }

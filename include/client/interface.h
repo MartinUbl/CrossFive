@@ -49,8 +49,11 @@ public:
 
     void SetName(string newname);
     const char* GetName() { return name.c_str(); };
+    void SetOponnentName(string newname);
+    const char* GetOponnentName() { return oponnentname.c_str(); };
 private:
     std::string name;
+    std::string oponnentname;
 };
 
 extern Store gStore;

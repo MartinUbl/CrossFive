@@ -257,7 +257,20 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
             {
                 if(pIf->GetStage() == STAGE_CONNECTING)
                 {
-                    gStore.SetName("Fakooof");
+                    uint32 pos,namelen;
+                    *packet >> pos;
+                    *packet >> namelen;
+                    const char* pname = packet->readstr(namelen);
+
+                    if(pos == POS_OPONNENT)
+                    {
+                        gStore.SetOponnentName(pname);
+                        pIf->SetStage(STAGE_GAME);
+
+                        GamePacket data(CMSG_READY_FOR_GAME);
+                        data << uint32(1);
+                        SendPacket(sock,&data);
+                    }
                 }
                 break;
             }

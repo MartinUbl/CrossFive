@@ -5,6 +5,8 @@ Client *clients=NULL;
 int num_clients=0;
 TCPsocket server;
 
+GamePlayHandler gGameplay;
+
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 
@@ -379,7 +381,7 @@ int main(int argc, char **argv)
 				if(getMsg(clients[i].sock, &message))
 				{
 					numready--;
-                    ProcessPacket(message,&clients[i]);
+                    gGameplay.ProcessPacket(message,&clients[i]);
 
 					free(message);
 					message = NULL;

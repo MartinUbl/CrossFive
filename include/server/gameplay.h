@@ -3,22 +3,25 @@
 
 #include <global.h>
 
+//gamepair structure
 struct TGamePair
 {
     bool present;
     Client* member;
-    uint8 marker; //0 krizky, 1 kolecka
-    bool isTurn; //je na tahu?
+    uint8 marker; //0 cross, 1 circles
+    bool isTurn; //is on turn?
     std::string name;
     uint32 guid;
 };
 
+//game variables structure
 struct DefGame
 {
     bool inProgress;
-    uint8 field[40][40]; //herni pole 40x40
+    uint8 field[40][40]; //game field 40x40
 };
 
+//default gameplay handler class
 class GamePlayHandler
 {
 public:

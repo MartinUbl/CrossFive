@@ -1,8 +1,9 @@
 #include <global.h>
 
-int running=1;
-Client *clients=NULL;
-int num_clients=0;
+//some local variables
+int running = 1;
+Client *clients = NULL;
+int num_clients = 0;
 TCPsocket server;
 
 //guid 0 = server, guid 1+ = klienti
@@ -13,6 +14,7 @@ GamePlayHandler gGameplay;
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 
+//reads message from socket, and returns in buf
 char *getMsg(TCPsocket sock, char **buf)
 {
 	Uint32 len,result;
@@ -55,6 +57,7 @@ char *getMsg(TCPsocket sock, char **buf)
 	return (*buf);
 }
 
+//writes message to socket
 int putMsg(TCPsocket sock, char *buf)
 {
 	Uint32 len,result;
@@ -87,6 +90,7 @@ int putMsg(TCPsocket sock, char *buf)
 	return result;
 }
 
+//returns a part of string from beginning to first found delimiter (delim)
 char *strsep(char **stringp, const char *delim)
 {
 	char *p;
@@ -106,9 +110,12 @@ char *strsep(char **stringp, const char *delim)
 	return p;
 }
 
+//references
 void send_all(char *buf);
 int find_client_name(char *name);
 
+//universal function for formating string
+//equivalent for sprintf
 char *mformat(char *format,...)
 {
 	va_list ap;
@@ -163,6 +170,7 @@ char *mformat(char *format,...)
 	return str;
 }
 
+//fix nick (terminate with null char)
 void fix_nick(char *s)
 {
 	unsigned int i;
@@ -171,11 +179,13 @@ void fix_nick(char *s)
 		s[i] = '\0';
 }
 
+//validate and check nick for unique
 int unique_nick(char *s)
 {
 	return (find_client_name(s) == -1);
 }
 
+//creates new storage for client and writes guid,name and sock pointer
 Client *add_client(TCPsocket sock, char *name)
 {
 	fix_nick(name);
@@ -201,6 +211,7 @@ Client *add_client(TCPsocket sock, char *name)
 	return (&clients[num_clients-1]);
 }
 
+//finds client by socket
 int find_client(TCPsocket sock)
 {
 	for(int i = 0; i < num_clients; i++)
@@ -210,6 +221,7 @@ int find_client(TCPsocket sock)
 	return -1;
 }
 
+//find client by name
 int find_client_name(char *name)
 {
 	for(int i = 0; i < num_clients; i++)
@@ -218,6 +230,7 @@ int find_client_name(char *name)
 	return -1;
 }
 
+//removes client from array and frees memory
 void remove_client(int i)
 {
 	const char *name = clients[i].name;
@@ -261,6 +274,7 @@ SDLNet_SocketSet create_sockset()
 	return set;
 }
 
+//sends message to all connected clients
 void send_all(char *buf)
 {
 	int cindex;
@@ -347,6 +361,7 @@ int main(int argc, char **argv)
 			ipaddr&0xff,
             port);
 
+    //Main loop
 	while(1)
 	{
 		int numready,i;
@@ -358,9 +373,11 @@ int main(int argc, char **argv)
 			break;
 		}
 
+        //If no socket ready, repeat automatically without handling
 		if(!numready)
 			continue;
 
+        //If some incomming connection is on socket, accept
 		if(SDLNet_SocketReady(server))
 		{
 			numready--;
@@ -379,6 +396,7 @@ int main(int argc, char **argv)
 			}
 		}
 
+        //iterate through clients and if some message on socket, handle it
 		for(i = 0; numready && i < num_clients; i++)
 		{
 			if(SDLNet_SocketReady(clients[i].sock))

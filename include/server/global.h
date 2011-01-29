@@ -11,6 +11,7 @@
 
 #pragma warning(disable:4996)
 
+//default struct for clients
 typedef struct {
     uint32 guid;
     TCPsocket sock;

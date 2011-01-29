@@ -1,7 +1,9 @@
 #include <gameplay.h>
 
+//default constructor
 GamePlayHandler::GamePlayHandler()
 {
+    //Initialize and clear gamepair array
     gamepair = new TGamePair[2];
     for(int i = 0; i < 2; i++)
     {
@@ -11,14 +13,17 @@ GamePlayHandler::GamePlayHandler()
         gamepair[i].present = false;
     }
 
+    //clear game field
     Game.inProgress = false;
     for(int i = 0; i < 40; i++)
         for(int j = 0; j < 40; j++)
             Game.field[i][j] = EMPTY;
 }
 
+//default destructor
 GamePlayHandler::~GamePlayHandler()
 {
+    //only free some memory
     if(gamepair)
     {
         for(int i = 0; i < 2; i++)
@@ -29,22 +34,26 @@ GamePlayHandler::~GamePlayHandler()
     }
 }
 
+//Function for sending packet
 int GamePlayHandler::SendPacket(TCPsocket sock, GamePacket* packet)
 {
-    //celkova velikost + 4 bajty na ID opkodu + 4 bajty na velikost tela packetu
+    //total size + 4 bytes for opcode ID + 4 bytes for packet body size
     size_t psize = packet->GetSize() + 4 + 4;
 
     char* buff = new char[psize];
+    //at first, add opcode ID parsed to bytes
     buff[0] = HIPART32(packet->GetOpcode())/0x100;
     buff[1] = HIPART32(packet->GetOpcode())%0x100;
     buff[2] = LOPART32(packet->GetOpcode())/0x100;
     buff[3] = LOPART32(packet->GetOpcode())%0x100;
 
+    //add size parsed to bytes
     buff[4] = HIPART32(packet->GetSize())/0x100;
     buff[5] = HIPART32(packet->GetSize())%0x100;
     buff[6] = LOPART32(packet->GetSize())/0x100;
     buff[7] = LOPART32(packet->GetSize())%0x100;
 
+    //add all body data as bytes
     packet->SetPos(0);
     for(size_t i = 0; i < packet->GetSize(); i++)
     {
@@ -84,22 +93,26 @@ int GamePlayHandler::SendPacket(TCPsocket sock, GamePacket* packet)
     return result;
 }
 
+//Function for sending packets globally
 void GamePlayHandler::SendGlobalPacket(GamePacket* packet, Client* pExcept)
 {
-    //celkova velikost + 4 bajty na ID opkodu + 4 bajty na velikost tela packetu
+    //total size + 4 bytes for opcode ID + 4 bytes for packet body size
     size_t psize = packet->GetSize() + 4 + 4;
 
     char* buff = new char[psize];
+    //at first, add opcode ID parsed to bytes
     buff[0] = HIPART32(packet->GetOpcode())/0x100;
     buff[1] = HIPART32(packet->GetOpcode())%0x100;
     buff[2] = LOPART32(packet->GetOpcode())/0x100;
     buff[3] = LOPART32(packet->GetOpcode())%0x100;
 
+    //add size parsed to bytes
     buff[4] = HIPART32(packet->GetSize())/0x100;
     buff[5] = HIPART32(packet->GetSize())%0x100;
     buff[6] = LOPART32(packet->GetSize())/0x100;
     buff[7] = LOPART32(packet->GetSize())%0x100;
 
+    //add all body data as bytes
     packet->SetPos(0);
     for(size_t i = 0; i < packet->GetSize(); i++)
     {
@@ -151,11 +164,12 @@ void GamePlayHandler::SendGlobalPacket(GamePacket* packet, Client* pExcept)
     }
 }
 
+//Handling for incoming packets
 void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
 {
     switch(packet->GetOpcode())
     {
-        case CMSG_LOGIN:
+        case CMSG_LOGIN: //Login packet (New game press)
             {
                 unsigned int vsize,nsize;
                 *packet >> vsize;
@@ -175,7 +189,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 SendPacket(pClient->sock, &data);
             }
             break;
-        case CMSG_HELLO:
+        case CMSG_HELLO: //Hello packet (New game press, login success)
             {
                 GamePacket data(SMSG_PLAYER_JOINED);
                 data << uint32(POS_OPONNENT);
@@ -191,7 +205,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 SendPacket(pClient->sock, &data2);
             }
             break;
-        case CMSG_READY_FOR_GAME:
+        case CMSG_READY_FOR_GAME: //Client is ready for game (and joining main game), so put him to queue
             {
                 //fake packet --> debug
                 GamePacket data(SMSG_GAME_START);
@@ -210,21 +224,24 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
 
                 return; //remove after debug done
 
-                //Pokud uz je nejaky member ready
+                //If some member ready, add as second from pair
                 if(gamepair[0].present && !gamepair[1].present)
                 {
+                    //add data to struct
                     gamepair[1].member = pClient;
                     gamepair[1].marker = 1;
                     gamepair[1].present = true;
                     gamepair[1].name = pClient->name;
                     gamepair[1].guid = pClient->guid;
 
+                    //send global message, that a player has joined
                     GamePacket dataa(SMSG_PLAYER_JOINED);
                     dataa << uint32(POS_OPONNENT);
                     dataa << uint32(strlen(gamepair[0].name.c_str()));
                     dataa << gamepair[0].name.c_str();
                     SendPacket(pClient->sock,&dataa);
 
+                    //and we are ready to start the game
                     GamePacket data(SMSG_GAME_START);
                     data << gamepair[0].guid;
                     data << gamepair[0].marker;
@@ -232,27 +249,31 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     data << gamepair[1].marker;
                     SendGlobalPacket(&data);
 
+                    //set turn to first joined player and send set turn message
                     gamepair[0].isTurn = true;
 
                     GamePacket data2(SMSG_SET_TURN);
                     data2 << gamepair[0].guid;
                     SendGlobalPacket(&data2);
                 }
-                //specialni pripad odpojeni klienta
+                //special case - if client disconnects
                 else if(!gamepair[0].present && gamepair[1].present)
                 {
+                    //add data to struct
                     gamepair[0].member = pClient;
                     gamepair[0].marker = 0;
                     gamepair[0].present = true;
                     gamepair[0].name = pClient->name;
                     gamepair[0].guid = pClient->guid;
 
+                    //send global message, that a player has joined
                     GamePacket dataa(SMSG_PLAYER_JOINED);
                     dataa << uint32(POS_OPONNENT);
                     dataa << uint32(strlen(gamepair[1].name.c_str()));
                     dataa << gamepair[1].name.c_str();
                     SendPacket(pClient->sock,&dataa);
 
+                    //and we are ready to start the game
                     GamePacket data(SMSG_GAME_START);
                     data << gamepair[0].guid;
                     data << gamepair[0].marker;
@@ -260,13 +281,14 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     data << gamepair[1].marker;
                     SendGlobalPacket(&data);
 
+                    //set turn to first joined player and send set turn message
                     gamepair[0].isTurn = true;
 
                     GamePacket data2(SMSG_SET_TURN);
                     data2 << gamepair[0].guid;
                     SendGlobalPacket(&data2);
                 }
-                //nikdo neni ready
+                //nobody's ready
                 else if(!gamepair[0].present && !gamepair[1].present)
                 {
                     gamepair[0].member = pClient;
@@ -277,7 +299,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 }
             }
             break;
-        case CMSG_TURN:
+        case CMSG_TURN: //Turn packet
             {
                 uint8 field_x, field_y, symbol;
 
@@ -287,7 +309,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
 
                 symbol = 1;
 
-                //debug - odkomentovat
+                //debug - uncomment after debug done
                 /*if(gamepair[0].member != NULL && gamepair[0].guid == clguid)
                     symbol = gamepair[0].marker+1;
                 else if(gamepair[1].member != NULL && gamepair[1].guid == clguid)
@@ -300,12 +322,15 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 if(gamepair[1].guid == clguid && !gamepair[1].isTurn)
                     return;*/
 
+                //verify out of range
                 if(field_x > 40 || field_y > 40)
                     return;
 
+                //verify free field
                 if(Game.field[field_x][field_y] != 0)
                     return;
 
+                //set field and let all clients know, that somebody turned
                 Game.field[field_x][field_y] = symbol; //posun v enum o 1
 
                 GamePacket data(SMSG_TURN);
@@ -314,6 +339,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 data << symbol;
                 SendGlobalPacket(&data);
 
+                //move turn to next player
                 GamePacket data2(SMSG_SET_TURN);
                 data2 << uint32((gamepair[0].guid == clguid)?gamepair[1].guid:gamepair[0].guid);
                 SendGlobalPacket(&data2);
@@ -325,10 +351,12 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
     }
 }
 
+//Function for processing packets
 void GamePlayHandler::ProcessPacket(const char* message, Client* pClient)
 {
     unsigned int opcode, size;
 
+    //at first, parse opcode id
     opcode =  message[0]*0x1000000;
     opcode += message[1]*0x10000;
     opcode += message[2]*0x100;
@@ -336,13 +364,16 @@ void GamePlayHandler::ProcessPacket(const char* message, Client* pClient)
 
     GamePacket packet(opcode);
 
+    //then parse size
     size =  message[4]*0x1000000;
     size += message[5]*0x10000;
     size += message[6]*0x100;
     size += message[7];
 
+    //and process a packet body
     for(size_t i = 0; i < size; i++)
         packet << (unsigned char)message[8+i];
 
+    //finally, let it handle
     HandlePacket(&packet, pClient);
 }

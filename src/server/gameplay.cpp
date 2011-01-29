@@ -196,34 +196,10 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 data << uint32(strlen(pClient->name));
                 data << pClient->name;
                 SendGlobalPacket(&data,pClient);
-
-                //fake packet --> debug
-                GamePacket data2(SMSG_PLAYER_JOINED);
-                data2 << uint32(POS_OPONNENT);
-                data2 << uint32(4);
-                data2 << "abcd";
-                SendPacket(pClient->sock, &data2);
             }
             break;
         case CMSG_READY_FOR_GAME: //Client is ready for game (and joining main game), so put him to queue
             {
-                //fake packet --> debug
-                GamePacket data(SMSG_GAME_START);
-                data << pClient->guid;
-                data << uint8(0);
-                data << uint32(888);
-                data << uint8(1);
-                SendGlobalPacket(&data);
-
-                gamepair[0].isTurn = true;
-                gamepair[1].member = pClient;
-
-                GamePacket data2(SMSG_SET_TURN);
-                data2 << pClient->guid;
-                SendGlobalPacket(&data2);
-
-                return; //remove after debug done
-
                 //If some member ready, add as second from pair
                 if(gamepair[0].present && !gamepair[1].present)
                 {
@@ -309,8 +285,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
 
                 symbol = 1;
 
-                //debug - uncomment after debug done
-                /*if(gamepair[0].member != NULL && gamepair[0].guid == clguid)
+                if(gamepair[0].member != NULL && gamepair[0].guid == clguid)
                     symbol = gamepair[0].marker+1;
                 else if(gamepair[1].member != NULL && gamepair[1].guid == clguid)
                     symbol = gamepair[1].marker+1;
@@ -320,7 +295,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 if(gamepair[0].guid == clguid && !gamepair[0].isTurn)
                     return;
                 if(gamepair[1].guid == clguid && !gamepair[1].isTurn)
-                    return;*/
+                    return;
 
                 //verify out of range
                 if(field_x > 40 || field_y > 40)

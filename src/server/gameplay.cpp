@@ -303,9 +303,10 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 if(field_x > 40 || field_y > 40)
                     return;
 
-                //TODO: overit, zdali je tah platny
+                if(Game.field[field_x][field_y] != 0)
+                    return;
 
-                Game.field[field_x][field_y] = symbol+1; //posun v enum o 1
+                Game.field[field_x][field_y] = symbol; //posun v enum o 1
 
                 GamePacket data(SMSG_TURN);
                 data << field_x;

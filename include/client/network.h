@@ -4,11 +4,14 @@
 #include <global.h>
 #include <../shared.h>
 
+//Default server address and port
 #define DEFAULT_IP "127.0.0.1"
 #define DEFAULT_PORT 555
 
+//maximal length of packet (think it will never reach 1KB, but who cares..)
 #define MAXLEN (1*10*1024) // 10 KB
 
+//default Network class
 class Network
 {
 public:

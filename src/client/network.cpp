@@ -9,6 +9,7 @@ TCPsocket serversock;
 int done = 0;
 SDL_Thread *net_thread = NULL;
 
+//reads message from socket and store it into buf
 char *getMsg(TCPsocket sock, char **buf)
 {
 	Uint32 len,result;
@@ -50,6 +51,7 @@ char *getMsg(TCPsocket sock, char **buf)
 	return (*buf);
 }
 
+//write message to socket
 int putMsg(TCPsocket sock, char *buf)
 {
 	Uint32 len,result;
@@ -82,6 +84,7 @@ int putMsg(TCPsocket sock, char *buf)
 	return result;
 }
 
+//returns a part of string from beginning to first found delimiter delim
 char *strsep(char **stringp, const char *delim)
 {
 	char *p;
@@ -104,6 +107,7 @@ char *strsep(char **stringp, const char *delim)
 	return p;
 }
 
+//parse and send packet
 int SendPacket(TCPsocket sock, GamePacket* packet)
 {
     //celkova velikost + 4 bajty na ID opkodu + 4 bajty na velikost tela packetu
@@ -158,32 +162,38 @@ int SendPacket(TCPsocket sock, GamePacket* packet)
     return result;
 }
 
+//Send packet to server (helper function)
 int SendToServer(GamePacket* packet)
 {
     return SendPacket(serversock,packet);
 }
 
+//Default constructor
 Network::Network()
 {
     connected = false;
 }
 
+//Are we connected?
 bool Network::IsConnected()
 {
     return connected;
 }
 
+//Connect!
 void Network::DoConnect(std::string phost, unsigned int pport)
 {
     if(SDLNet_Init() == -1)
     {
-        //Nepodarilo se pripojit
+        //Failed to connect
+        //TODO: Error message
         connected = false;
         return;
     }
 
     port = pport;
 
+    //Attempt to reach server
     if(SDLNet_ResolveHost(&ip,phost.c_str(),port) == -1)
 	{
 		connected = false;
@@ -191,6 +201,7 @@ void Network::DoConnect(std::string phost, unsigned int pport)
         return;
 	}
 
+    //Open socket
     sock = SDLNet_TCP_Open(&ip);
 
     if(!sock)
@@ -199,11 +210,13 @@ void Network::DoConnect(std::string phost, unsigned int pport)
         return;
     }
 
+    //Generate some random chars for our ID
     char* name = new char[5];
     for(int i = 0; i < 4; i++)
         name[i] = 70+rand()%20;
     name[4] = '\0';
 
+    //send first initialization packet with our name
     if(!putMsg(sock,(char*)name))
 	{
         connected = false;
@@ -216,6 +229,7 @@ void Network::DoConnect(std::string phost, unsigned int pport)
 
     serversock = sock;
 
+    //send login request packet
     GamePacket data(CMSG_LOGIN);
     data << uint32(strlen(VERSION_STR));
     data << VERSION_STR;
@@ -223,19 +237,18 @@ void Network::DoConnect(std::string phost, unsigned int pport)
     data << name;
     SendPacket(sock,&data);
 
+    //And create net_thread for networking purposes
     net_thread = SDL_CreateThread(net_thread_main,sock);
-
-    //SDL_WaitThread(local_thread,NULL);
-	//SDL_WaitThread(net_thread,NULL);
 }
 
+//function for handling packet
 void HandlePacket(GamePacket* packet, TCPsocket sock)
 {
     Interface* pIf = Piskvorky.GetInterface();
 
     switch(packet->GetOpcode())
     {
-        case SMSG_LOGIN_RESPONSE:
+        case SMSG_LOGIN_RESPONSE: //Login request response
             {
                 uint8 loginstate;
                 uint32 nsize, sguid;
@@ -247,49 +260,55 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
 
                 if(loginstate != OK)
                 {
-                    //Login failed, return
+                    //Login failed (i.e. version mismatch), return
                     return;
                 }
 
+                //Set server assigned guid and our name
                 gStore.SetMyGUID(sguid);
                 gStore.SetName(name);
 
+                //Greetings!
                 GamePacket data(CMSG_HELLO);
                 data << uint32(0);
                 SendPacket(sock,&data);
 
+                //Set our stage to connecting
                 pIf->SetStage(STAGE_CONNECTING);
                 pIf->StoreChanged();
 
+                //And let server know, that we are ready for game
                 GamePacket data2(CMSG_READY_FOR_GAME);
                 data2 << uint32(1);
                 SendPacket(sock,&data2);
 
                 break;
             }
-        case SMSG_PLAYER_JOINED:
+        case SMSG_PLAYER_JOINED: //Some player has joined
             {
-                if(pIf->GetStage() == STAGE_CONNECTING)
+                if(pIf->GetStage() == STAGE_CONNECTING) //If we are waiting for some oponnent...
                 {
                     uint32 pos,namelen;
                     *packet >> pos;
                     *packet >> namelen;
                     const char* pname = packet->readstr(namelen);
 
+                    //...and if it is our oponnent...
                     if(pos == POS_OPONNENT)
                     {
+                        //...set him as our oponnent and move to game
                         gStore.SetOponnentName(pname);
                         pIf->SetStage(STAGE_GAME);
                     }
                 }
                 break;
             }
-        case SMSG_GAME_START:
+        case SMSG_GAME_START: //Game starts, move moving to game here
             {
                 //TODO: handle allowing to play
             }
             break;
-        case SMSG_SET_TURN:
+        case SMSG_SET_TURN: //Server tells, who is supposed to do the next turn
             {
                 uint32 guid;
                 *packet >> guid;
@@ -306,7 +325,7 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                 pIf->StoreChanged();
             }
             break;
-        case SMSG_TURN:
+        case SMSG_TURN: //Somebody did the turn
             {
                 unsigned char field_x, field_y, symbol;
                 *packet >> field_x >> field_y >> symbol;
@@ -316,15 +335,17 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
             }
             break;
         default:
-            MessageBox(0,"Prijat neznamy opkod","Chyba",0);
+            MessageBox(0,"Received unknown opcode","Chyba",0);
             break;
     }
 }
 
+//Process incoming packet
 void ProcessPacket(char* message, TCPsocket sock)
 {
     unsigned int opcode, size;
 
+    //at first, parse opcode ID
     opcode =  message[0]*0x1000000;
     opcode += message[1]*0x10000;
     opcode += message[2]*0x100;
@@ -332,17 +353,21 @@ void ProcessPacket(char* message, TCPsocket sock)
 
     GamePacket packet(opcode);
 
+    //next parse size
     size =  message[4]*0x1000000;
     size += message[5]*0x10000;
     size += message[6]*0x100;
     size += message[7];
 
+    //and parse the body of packet
     for(size_t i = 0; i < size; i++)
         packet << (unsigned char)message[8+i];
 
+    //finally, let it handle
     HandlePacket(&packet, sock);
 }
 
+//Networking thread
 int net_thread_main(void *data)
 {
 	TCPsocket sock = (TCPsocket)data;

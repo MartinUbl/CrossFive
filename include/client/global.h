@@ -17,11 +17,13 @@ using namespace std;
 #include <network.h>
 #include <../shared.h>
 
+//disable some stupid warnings
 #pragma warning(disable:4996)
 
 class Interface;
 class Network;
 
+//main application class
 class Application
 {
 public:
@@ -45,6 +47,7 @@ extern Application Piskvorky;
 
 extern void SetColor(unsigned int r, unsigned int g, unsigned int b);
 
+//drawing helpers
 class Surface
 {
 public:

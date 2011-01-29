@@ -3,6 +3,7 @@
 
 #include <global.h>
 
+//Stage enum
 typedef enum
 {
     STAGE_MENU,
@@ -10,8 +11,10 @@ typedef enum
     STAGE_GAME,
 } Stage;
 
+//extern class
 class Network;
 
+//main Interface class
 class Interface
 {
 public:
@@ -40,6 +43,7 @@ private:
     Stage stage;
 };
 
+//gameplay Store for storing datas like field values, other players and so on..
 class Store
 {
 public:
@@ -77,6 +81,7 @@ private:
     bool myturn;
 };
 
+//load externally declared gStore
 extern Store gStore;
 
 #endif

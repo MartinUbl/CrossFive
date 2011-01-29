@@ -334,6 +334,11 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                 pIf->StoreChanged();
             }
             break;
+        case SMSG_INVALID_TURN: //You did something wrong
+            {
+                //TODO: Implement (sound, ingame warning,..)
+            }
+            break;
         default:
             MessageBox(0,"Received unknown opcode","Chyba",0);
             break;

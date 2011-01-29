@@ -328,7 +328,14 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
 
                 //verify free field
                 if(Game.field[field_x][field_y] != 0)
+                {
+                    GamePacket data(SMSG_INVALID_TURN);
+                    data << field_x;
+                    data << field_y;
+                    SendPacket(pClient->sock,&data);
+
                     return;
+                }
 
                 //set field and let all clients know, that somebody turned
                 Game.field[field_x][field_y] = symbol; //posun v enum o 1

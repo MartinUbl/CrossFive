@@ -49,6 +49,8 @@ public:
         for(int i = 0; i < 40; i++)
             for(int j = 0; j < 40; j++)
                 field[i][j] = 0;
+
+        myturn = false;
     }
 
     void SetName(string newname);
@@ -61,12 +63,18 @@ public:
 
     unsigned char GetFieldValue(unsigned char x, unsigned char y) { return field[x][y]; };
     void SetFieldValue(unsigned char x, unsigned char y, unsigned char val) { field[x][y] = val; };
+
+    bool IsMyTurn() { return myturn; };
+    void SetMyTurn() { myturn = true; };
+    void UnsetMyTurn() { myturn = false; };
 private:
     std::string name;
     std::string oponnentname;
 
     unsigned int myguid;
     unsigned char field[40][40];
+
+    bool myturn;
 };
 
 extern Store gStore;

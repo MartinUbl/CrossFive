@@ -291,7 +291,19 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
             break;
         case SMSG_SET_TURN:
             {
-                //TODO: implement
+                uint32 guid;
+                *packet >> guid;
+
+                if(guid == gStore.GetMyGUID())
+                {
+                    gStore.SetMyTurn();
+                }
+                else
+                {
+                    gStore.UnsetMyTurn();
+                }
+
+                pIf->StoreChanged();
             }
             break;
         case SMSG_TURN:

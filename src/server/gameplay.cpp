@@ -226,16 +226,16 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     SendPacket(pClient->sock,&dataa);
 
                     GamePacket data(SMSG_GAME_START);
-                    data << gamepair[0].member->guid;
+                    data << gamepair[0].guid;
                     data << gamepair[0].marker;
-                    data << gamepair[1].member->guid;
+                    data << gamepair[1].guid;
                     data << gamepair[1].marker;
                     SendGlobalPacket(&data);
 
                     gamepair[0].isTurn = true;
 
                     GamePacket data2(SMSG_SET_TURN);
-                    data2 << gamepair[0].member->guid;
+                    data2 << gamepair[0].guid;
                     SendGlobalPacket(&data2);
                 }
                 //specialni pripad odpojeni klienta
@@ -254,16 +254,16 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     SendPacket(pClient->sock,&dataa);
 
                     GamePacket data(SMSG_GAME_START);
-                    data << gamepair[0].member->guid;
+                    data << gamepair[0].guid;
                     data << gamepair[0].marker;
-                    data << gamepair[1].member->guid;
+                    data << gamepair[1].guid;
                     data << gamepair[1].marker;
                     SendGlobalPacket(&data);
 
                     gamepair[0].isTurn = true;
 
                     GamePacket data2(SMSG_SET_TURN);
-                    data2 << gamepair[0].member->guid;
+                    data2 << gamepair[0].guid;
                     SendGlobalPacket(&data2);
                 }
                 //nikdo neni ready
@@ -293,6 +293,11 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 else if(gamepair[1].member != NULL && gamepair[1].guid == clguid)
                     symbol = gamepair[1].marker+1;
                 else
+                    return;
+
+                if(gamepair[0].guid == clguid && !gamepair[0].isTurn)
+                    return;
+                if(gamepair[1].guid == clguid && !gamepair[1].isTurn)
                     return;*/
 
                 if(field_x > 40 || field_y > 40)
@@ -307,6 +312,13 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 data << field_y;
                 data << symbol;
                 SendGlobalPacket(&data);
+
+                GamePacket data2(SMSG_SET_TURN);
+                data2 << uint32((gamepair[0].guid == clguid)?gamepair[1].guid:gamepair[0].guid);
+                SendGlobalPacket(&data2);
+
+                gamepair[0].isTurn = !gamepair[0].isTurn;
+                gamepair[1].isTurn = !gamepair[1].isTurn;
             }
             break;
     }

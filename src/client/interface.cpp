@@ -107,7 +107,9 @@ void Interface::MouseClick(int x, int y, bool left)
     if(inRect(x,y,10+2,10+2+2+40*(2+15),45+2,45+2+40*(2+15)) && stage == STAGE_GAME)
     {
         //Tah
-        //if(game is in progress && i am not spectator && is my turn)
+        if(!gStore.IsMyTurn())
+            return;
+
         unsigned char field_x, field_y;
 
         field_x = (unsigned char)(int(x-10) / int(2+15));

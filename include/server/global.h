@@ -2,10 +2,16 @@
 #define __GLOBAL_H_
 
 #include <string.h>
+#ifndef _WIN32
+ #include <string>
+ #include <SDL/SDL.h>
+ #include <SDL/SDL_net.h>
+#else
+ #include <SDL.h>
+ #include <SDL_net.h>
+#endif
 #include <stdarg.h>
 #include <stdlib.h>
-#include <SDL.h>
-#include <SDL_net.h>
 
 #include <../shared.h>
 

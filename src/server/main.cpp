@@ -11,8 +11,10 @@ uint32 maxguid = 1;
 
 GamePlayHandler gGameplay;
 
-#define strcasecmp _stricmp
-#define strncasecmp _strnicmp
+#ifdef _WIN32
+ #define strcasecmp _stricmp
+ #define strncasecmp _strnicmp
+#endif
 
 //reads message from socket, and returns in buf
 char *getMsg(TCPsocket sock, char **buf)
@@ -90,6 +92,8 @@ int putMsg(TCPsocket sock, char *buf)
 	return result;
 }
 
+
+#ifdef _WIN32
 //returns a part of string from beginning to first found delimiter (delim)
 char *strsep(char **stringp, const char *delim)
 {
@@ -109,6 +113,7 @@ char *strsep(char **stringp, const char *delim)
 		*stringp = NULL;
 	return p;
 }
+#endif
 
 //references
 void send_all(char *buf);

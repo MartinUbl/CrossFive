@@ -193,7 +193,7 @@ Client *add_client(TCPsocket sock, char *name)
 	}
 	clients = (Client*)realloc(clients, (num_clients+1)*sizeof(Client));
     clients[num_clients].guid = maxguid;
-	clients[num_clients].name = name;
+    clients[num_clients].name = name;
 	clients[num_clients].sock = sock;
     maxguid++;
 	num_clients++;
@@ -220,7 +220,7 @@ int find_client_name(char *name)
 
 void remove_client(int i)
 {
-	char *name = clients[i].name;
+	const char *name = clients[i].name;
 
 	if(i < 0 && i >= num_clients)
 		return;
@@ -235,7 +235,7 @@ void remove_client(int i)
     //Disconnect message
 
 	if(name)
-		free(name);
+		free((void*)name);
 }
 
 SDLNet_SocketSet create_sockset()

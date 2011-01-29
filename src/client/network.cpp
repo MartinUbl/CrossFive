@@ -261,6 +261,10 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                 pIf->SetStage(STAGE_CONNECTING);
                 pIf->StoreChanged();
 
+                GamePacket data2(CMSG_READY_FOR_GAME);
+                data2 << uint32(1);
+                SendPacket(sock,&data2);
+
                 break;
             }
         case SMSG_PLAYER_JOINED:
@@ -276,10 +280,6 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                     {
                         gStore.SetOponnentName(pname);
                         pIf->SetStage(STAGE_GAME);
-
-                        GamePacket data(CMSG_READY_FOR_GAME);
-                        data << uint32(1);
-                        SendPacket(sock,&data);
                     }
                 }
                 break;

@@ -14,7 +14,7 @@
 typedef struct {
     uint32 guid;
     TCPsocket sock;
-    char *name;
+    char* name;
 } Client;
 
 #include <gameplay.h>

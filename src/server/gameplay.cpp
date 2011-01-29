@@ -8,6 +8,7 @@ GamePlayHandler::GamePlayHandler()
         gamepair[i].member = NULL;
         gamepair[i].marker = 0;
         gamepair[i].isTurn = false;
+        gamepair[i].present = false;
     }
 
     Game.inProgress = false;
@@ -159,10 +160,8 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 unsigned int vsize,nsize;
                 *packet >> vsize;
                 const char* versionstr = packet->readstr(vsize);
-                printf("Client version: %s\n",versionstr);
                 *packet >> nsize;
                 const char* name = packet->readstr(nsize);
-                printf("Name: %s\n",name);
                 pClient->name = (char*)name;
 
                 GamePacket data(SMSG_LOGIN_RESPONSE);
@@ -203,6 +202,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 SendGlobalPacket(&data);
 
                 gamepair[0].isTurn = true;
+                gamepair[1].member = pClient;
 
                 GamePacket data2(SMSG_SET_TURN);
                 data2 << pClient->guid;
@@ -211,10 +211,19 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 return; //remove after debug done
 
                 //Pokud uz je nejaky member ready
-                if(gamepair[0].member && !gamepair[1].member)
+                if(gamepair[0].present && !gamepair[1].present)
                 {
                     gamepair[1].member = pClient;
                     gamepair[1].marker = 1;
+                    gamepair[1].present = true;
+                    gamepair[1].name = pClient->name;
+                    gamepair[1].guid = pClient->guid;
+
+                    GamePacket dataa(SMSG_PLAYER_JOINED);
+                    dataa << uint32(POS_OPONNENT);
+                    dataa << uint32(strlen(gamepair[0].name.c_str()));
+                    dataa << gamepair[0].name.c_str();
+                    SendPacket(pClient->sock,&dataa);
 
                     GamePacket data(SMSG_GAME_START);
                     data << gamepair[0].member->guid;
@@ -230,10 +239,19 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     SendGlobalPacket(&data2);
                 }
                 //specialni pripad odpojeni klienta
-                else if(!gamepair[0].member && gamepair[1].member)
+                else if(!gamepair[0].present && gamepair[1].present)
                 {
                     gamepair[0].member = pClient;
                     gamepair[0].marker = 0;
+                    gamepair[0].present = true;
+                    gamepair[0].name = pClient->name;
+                    gamepair[0].guid = pClient->guid;
+
+                    GamePacket dataa(SMSG_PLAYER_JOINED);
+                    dataa << uint32(POS_OPONNENT);
+                    dataa << uint32(strlen(gamepair[1].name.c_str()));
+                    dataa << gamepair[1].name.c_str();
+                    SendPacket(pClient->sock,&dataa);
 
                     GamePacket data(SMSG_GAME_START);
                     data << gamepair[0].member->guid;
@@ -249,10 +267,13 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                     SendGlobalPacket(&data2);
                 }
                 //nikdo neni ready
-                else if(!gamepair[0].member && !gamepair[1].member)
+                else if(!gamepair[0].present && !gamepair[1].present)
                 {
                     gamepair[0].member = pClient;
                     gamepair[0].marker = 0;
+                    gamepair[0].present = true;
+                    gamepair[0].name = pClient->name;
+                    gamepair[0].guid = pClient->guid;
                 }
             }
             break;
@@ -263,14 +284,16 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 *packet >> field_x >> field_y;
 
                 uint32 clguid = pClient->guid;
-                //odkomentovat po debugu
-                /*if(gamepair[0].member->guid == clguid)
-                    symbol = gamepair[0].marker;
-                else if(gamepair[1].member->guid == clguid)
-                    symbol = gamepair[1].marker;
+
+                symbol = 1;
+
+                //debug - odkomentovat
+                /*if(gamepair[0].member != NULL && gamepair[0].guid == clguid)
+                    symbol = gamepair[0].marker+1;
+                else if(gamepair[1].member != NULL && gamepair[1].guid == clguid)
+                    symbol = gamepair[1].marker+1;
                 else
                     return;*/
-                symbol = 1;
 
                 if(field_x > 40 || field_y > 40)
                     return;

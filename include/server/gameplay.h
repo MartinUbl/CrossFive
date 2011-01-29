@@ -3,18 +3,21 @@
 
 #include <global.h>
 
-typedef struct
+struct TGamePair
 {
+    bool present;
     Client* member;
     uint8 marker; //0 krizky, 1 kolecka
     bool isTurn; //je na tahu?
-} TGamePair;
+    std::string name;
+    uint32 guid;
+};
 
-typedef struct
+struct DefGame
 {
     bool inProgress;
     uint8 field[40][40]; //herni pole 40x40
-} DefGame;
+};
 
 class GamePlayHandler
 {

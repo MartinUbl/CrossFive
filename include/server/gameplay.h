@@ -32,6 +32,8 @@ public:
     void SendGlobalPacket(GamePacket* packet, Client* pExcept = NULL);
     void HandlePacket(GamePacket* packet, Client* pClient);
     void ProcessPacket(const char* message, Client* pClient);
+
+    unsigned int CheckWin();
 private:
     TGamePair* gamepair;
     DefGame Game;

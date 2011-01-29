@@ -34,6 +34,56 @@ GamePlayHandler::~GamePlayHandler()
     }
 }
 
+//check if somebody did 5 in a row
+unsigned int GamePlayHandler::CheckWin()
+{
+    uint8 tmp = 0;
+    bool match = true;
+
+    for(int i = 0; i < 40; i++)
+    {
+        for(int j = 0; j < 40; j++)
+        {
+            //do not check last 4x4 square because of our checking system
+            if(i > 36 && j > 36)
+                continue;
+
+            //horizontally
+            tmp = Game.field[i][j];
+            match = true;
+            for(int k = 1; k < 5; k++)
+            {
+                if(Game.field[i][j+k] != tmp)
+                    match = false;
+            }
+            if(match && tmp != 0)
+                return tmp;
+
+            //vertically
+            match = true;
+            for(int k = 1; k < 5; k++)
+            {
+                if(Game.field[i+k][j] != tmp)
+                    match = false;
+            }
+            if(match && tmp != 0)
+                return tmp;
+
+            //across
+            match = true;
+            for(int k = 1; k < 5; k++)
+            {
+                if(Game.field[i+k][j+k] != tmp)
+                    match = false;
+            }
+            if(match && tmp != 0)
+                return tmp;
+        }
+    }
+
+    return 0;
+}
+
 //Function for sending packet
 int GamePlayHandler::SendPacket(TCPsocket sock, GamePacket* packet)
 {
@@ -320,6 +370,11 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 data << field_y;
                 data << symbol;
                 SendGlobalPacket(&data);
+
+                //check if someone wins after this turn
+                uint8 win = CheckWin();
+                //if(win)
+                //    printf("Winner: %u\n",win);
 
                 //move turn to next player
                 GamePacket data2(SMSG_SET_TURN);

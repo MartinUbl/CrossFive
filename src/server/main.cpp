@@ -333,7 +333,7 @@ int main(int argc, char **argv)
     printf("OK\n");
 
     printf("Resolving host... ");
-	port = (Uint16)555;
+	port = (Uint16)6484;
 	if(SDLNet_ResolveHost(&ip,NULL,port) == -1)
 	{
 		printf("FAILED: %s\n",SDLNet_GetError());

@@ -339,6 +339,19 @@ void HandlePacket(GamePacket* packet, TCPsocket sock)
                 //TODO: Implement (sound, ingame warning,..)
             }
             break;
+        case SMSG_WIN: //Somebody wins
+            {
+                uint32 guid;
+                unsigned short coords[4];
+
+                *packet >> guid;
+                *packet >> coords[0] >> coords[1] >> coords[2] >> coords[3];
+
+                gStore.SetWinner(guid);
+                gStore.SetWinCoords(coords);
+                pIf->StoreChanged();
+            }
+            break;
         default:
             MessageBox(0,"Received unknown opcode","Chyba",0);
             break;

@@ -91,6 +91,12 @@ void Interface::Draw()
             for(int j = 0; j < 40; j++)
                 DrawFieldElem(i,j,gStore.GetFieldValue(i,j));
         }
+
+        //if someone won
+        if(gStore.GetWinner())
+        {
+            thickLineColor(SDest, 10+9+gStore.GetWinCoords(0)*(2+15), 45+2+7+gStore.GetWinCoords(1)*(2+15), 10+9+gStore.GetWinCoords(2)*(2+15), 45+2+7+gStore.GetWinCoords(3)*(2+15), 4, 0x1010FFFF);
+        }
         break;
     default:
         break;

@@ -55,6 +55,8 @@ public:
                 field[i][j] = 0;
 
         myturn = false;
+
+        winner = 0;
     }
 
     void SetName(string newname);
@@ -71,6 +73,11 @@ public:
     bool IsMyTurn() { return myturn; };
     void SetMyTurn() { myturn = true; };
     void UnsetMyTurn() { myturn = false; };
+
+    void SetWinCoords(unsigned short* wcoord) { for(int i = 0; i < 4; i++) wincoord[i] = wcoord[i]; };
+    void SetWinner(unsigned int nwinner) { winner = nwinner; };
+    unsigned int GetWinner() { return winner; };
+    unsigned short GetWinCoords(unsigned int index) { return wincoord[index]; };
 private:
     std::string name;
     std::string oponnentname;
@@ -79,6 +86,8 @@ private:
     unsigned char field[40][40];
 
     bool myturn;
+    unsigned short wincoord[4];
+    unsigned int winner;
 };
 
 //load externally declared gStore

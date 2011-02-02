@@ -19,6 +19,7 @@ struct DefGame
 {
     bool inProgress;
     uint8 field[40][40]; //game field 40x40
+    uint16 wincoord[4]; //winning coordinates 0,1-first x,y, 2,3-second x,y
 };
 
 //default gameplay handler class
@@ -34,6 +35,7 @@ public:
     void ProcessPacket(const char* message, Client* pClient);
 
     unsigned int CheckWin();
+    void Win(unsigned int symbol);
 private:
     TGamePair* gamepair;
     DefGame Game;

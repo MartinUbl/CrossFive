@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="SDL.lib SDLmain.lib SDL_ttf.lib wsock32.lib odbc32.lib odbccp32.lib sdl_net.lib"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_ttf.lib wsock32.lib odbc32.lib odbccp32.lib sdl_net.lib SDL_gfx.lib"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"

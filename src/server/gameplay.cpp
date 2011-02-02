@@ -57,7 +57,13 @@ unsigned int GamePlayHandler::CheckWin()
                     match = false;
             }
             if(match && tmp != 0)
+            {
+                Game.wincoord[0] = i;
+                Game.wincoord[1] = j;
+                Game.wincoord[2] = i;
+                Game.wincoord[3] = j+4;
                 return tmp;
+            }
 
             //vertically
             match = true;
@@ -67,7 +73,13 @@ unsigned int GamePlayHandler::CheckWin()
                     match = false;
             }
             if(match && tmp != 0)
+            {
+                Game.wincoord[0] = i;
+                Game.wincoord[1] = j;
+                Game.wincoord[2] = i+4;
+                Game.wincoord[3] = j;
                 return tmp;
+            }
 
             //across
             match = true;
@@ -77,11 +89,38 @@ unsigned int GamePlayHandler::CheckWin()
                     match = false;
             }
             if(match && tmp != 0)
+            {
+                Game.wincoord[0] = i;
+                Game.wincoord[1] = j;
+                Game.wincoord[2] = i+4;
+                Game.wincoord[3] = j+4;
                 return tmp;
+            }
         }
     }
 
     return 0;
+}
+
+void GamePlayHandler::Win(unsigned int symbol)
+{
+    uint32 guid;
+
+    if(gamepair[0].marker == symbol)
+        guid = gamepair[0].guid;
+    else if(gamepair[1].marker == symbol)
+        guid = gamepair[1].guid;
+    else
+    {
+        printf("Invalid symbol %u as winner!",symbol);
+        return;
+    }
+
+    GamePacket data(SMSG_WIN);
+    data << guid;
+    for(int i = 0; i < 4; i++)
+        data << Game.wincoord[i];
+    SendGlobalPacket(&data);
 }
 
 //Function for sending packet
@@ -363,7 +402,7 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 }
 
                 //set field and let all clients know, that somebody turned
-                Game.field[field_x][field_y] = symbol; //posun v enum o 1
+                Game.field[field_x][field_y] = symbol;
 
                 GamePacket data(SMSG_TURN);
                 data << field_x;
@@ -372,9 +411,9 @@ void GamePlayHandler::HandlePacket(GamePacket* packet, Client* pClient)
                 SendGlobalPacket(&data);
 
                 //check if someone wins after this turn
-                uint8 win = CheckWin();
-                //if(win)
-                //    printf("Winner: %u\n",win);
+                uint8 win = CheckWin(); //winning symbol, stored as symbol+1 in field
+                if(win)
+                    Win(win - 1);
 
                 //move turn to next player
                 GamePacket data2(SMSG_SET_TURN);

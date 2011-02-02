@@ -7,6 +7,7 @@
 #include <SDL_image.h>
 #include <winsock.h>
 #include <SDL_net.h>
+#include <SDL_gfxPrimitives.h>
 
 #include <string.h>
 #include <iostream>

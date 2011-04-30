@@ -5,7 +5,7 @@
 #include <../shared.h>
 
 //Default server address and port
-#define DEFAULT_IP "127.0.0.1"
+#define DEFAULT_IP "81.201.56.141"
 #define DEFAULT_PORT 6484
 
 //maximal length of packet (think it will never reach 1KB, but who cares..)

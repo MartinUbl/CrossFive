@@ -12,99 +12,99 @@ SDL_Thread *net_thread = NULL;
 //reads message from socket and store it into buf
 char *getMsg(TCPsocket sock, char **buf)
 {
-	Uint32 len,result;
-	static char *_buf;
+    Uint32 len,result;
+    static char *_buf;
 
-	if(!buf)
-		buf = &_buf;
+    if(!buf)
+        buf = &_buf;
 
-	if(*buf)
-		free(*buf);
-	*buf = NULL;
+    if(*buf)
+        free(*buf);
+    *buf = NULL;
 
-	result = SDLNet_TCP_Recv(sock,&len,sizeof(len));
-	if(result < sizeof(len))
-	{
-		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
-			printf("SDLNet_TCP_Recv: %s\n", SDLNet_GetError());
-		return NULL;
-	}
+    result = SDLNet_TCP_Recv(sock,&len,sizeof(len));
+    if(result < sizeof(len))
+    {
+        if(SDLNet_GetError() && strlen(SDLNet_GetError()))
+            printf("SDLNet_TCP_Recv: %s\n", SDLNet_GetError());
+        return NULL;
+    }
 
-	len=SDL_SwapBE32(len);
+    len = SDL_SwapBE32(len);
 
-	if(!len)
-		return NULL;
+    if(!len)
+        return NULL;
 
-	*buf = (char*)malloc(len);
-	if(!(*buf))
-		return NULL;
+    *buf = (char*)malloc(len);
+    if(!(*buf))
+        return NULL;
 
-	result = SDLNet_TCP_Recv(sock,*buf,len);
-	if(result < len)
-	{
-		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
-			printf("SDLNet_TCP_Recv: %s\n", SDLNet_GetError());
-		free(*buf);
-		buf = NULL;
-	}
+    result = SDLNet_TCP_Recv(sock,*buf,len);
+    if(result < len)
+    {
+        if(SDLNet_GetError() && strlen(SDLNet_GetError()))
+            printf("SDLNet_TCP_Recv: %s\n", SDLNet_GetError());
+        free(*buf);
+        buf = NULL;
+    }
 
-	return (*buf);
+    return (*buf);
 }
 
 //write message to socket
 int putMsg(TCPsocket sock, char *buf)
 {
-	Uint32 len,result;
+    Uint32 len,result;
 
-	if(!buf || !strlen(buf))
-		return 1;
+    if(!buf || !strlen(buf))
+        return 1;
 
-	len = strlen(buf)+1;
+    len = strlen(buf)+1;
 
-	len = SDL_SwapBE32(len);
+    len = SDL_SwapBE32(len);
 
-	result = SDLNet_TCP_Send(sock,&len,sizeof(len));
-	if(result < sizeof(len))
+    result = SDLNet_TCP_Send(sock,&len,sizeof(len));
+    if(result < sizeof(len))
     {
-		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
-			printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
-		return 0;
-	}
+        if(SDLNet_GetError() && strlen(SDLNet_GetError()))
+            printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
+        return 0;
+    }
 
-	len = SDL_SwapBE32(len);
+    len = SDL_SwapBE32(len);
 
-	result = SDLNet_TCP_Send(sock,buf,len);
-	if(result < len)
+    result = SDLNet_TCP_Send(sock,buf,len);
+    if(result < len)
     {
-		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
-			printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
-		return 0;
-	}
+        if(SDLNet_GetError() && strlen(SDLNet_GetError()))
+            printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
+        return 0;
+    }
 
-	return result;
+    return result;
 }
 
 //returns a part of string from beginning to first found delimiter delim
 char *strsep(char **stringp, const char *delim)
 {
-	char *p;
-	
-	if(!stringp)
-		return NULL;
+    char *p;
 
-	p = *stringp;
-	while(**stringp && !strchr(delim,**stringp))
-		(*stringp)++;
+    if(!stringp)
+        return NULL;
 
-	if(**stringp)
-	{
-		**stringp = '\0';
-		(*stringp)++;
-	}
-	else
-		*stringp = NULL;
+    p = *stringp;
+    while(**stringp && !strchr(delim,**stringp))
+        (*stringp)++;
 
-	return p;
+    if(**stringp)
+    {
+        **stringp = '\0';
+        (*stringp)++;
+    }
+    else
+        *stringp = NULL;
+
+    return p;
 }
 
 //parse and send packet
@@ -137,27 +137,27 @@ int SendPacket(TCPsocket sock, GamePacket* packet)
 
     int len, result;
 
-	len = psize+1;
+    len = psize+1;
 
-	len = SDL_SwapBE32(len);
+    len = SDL_SwapBE32(len);
 
-	result = SDLNet_TCP_Send(sock,&len,sizeof(len));
-	if(result < sizeof(len))
+    result = SDLNet_TCP_Send(sock,&len,sizeof(len));
+    if(result < sizeof(len))
     {
-		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
-			printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
-		return 0;
-	}
+        if(SDLNet_GetError() && strlen(SDLNet_GetError()))
+            printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
+        return 0;
+    }
 
-	len = SDL_SwapBE32(len);
-	
-	result = SDLNet_TCP_Send(sock,buf,len);
-	if(result < len)
+    len = SDL_SwapBE32(len);
+
+    result = SDLNet_TCP_Send(sock,buf,len);
+    if(result < len)
     {
-		if(SDLNet_GetError() && strlen(SDLNet_GetError()))
-			printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
-		return 0;
-	}
+        if(SDLNet_GetError() && strlen(SDLNet_GetError()))
+            printf("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
+        return 0;
+    }
 
     return result;
 }
@@ -195,11 +195,11 @@ void Network::DoConnect(std::string phost, unsigned int pport)
 
     //Attempt to reach server
     if(SDLNet_ResolveHost(&ip,phost.c_str(),port) == -1)
-	{
-		connected = false;
-		SDLNet_Quit();
+    {
+        connected = false;
+        SDLNet_Quit();
         return;
-	}
+    }
 
     //Open socket
     sock = SDLNet_TCP_Open(&ip);
@@ -218,14 +218,14 @@ void Network::DoConnect(std::string phost, unsigned int pport)
 
     //send first initialization packet with our name
     if(!putMsg(sock,(char*)name))
-	{
+    {
         connected = false;
-		SDLNet_TCP_Close(sock);
-		SDLNet_Quit();
-		SDL_Quit();
+        SDLNet_TCP_Close(sock);
+        SDLNet_Quit();
+        SDL_Quit();
         exit(0);
-		return;
-	}
+        return;
+    }
 
     serversock = sock;
 
@@ -388,53 +388,53 @@ void ProcessPacket(char* message, TCPsocket sock)
 //Networking thread
 int net_thread_main(void *data)
 {
-	TCPsocket sock = (TCPsocket)data;
-	SDLNet_SocketSet set;
-	int numready;
-	char *str = NULL;
+    TCPsocket sock = (TCPsocket)data;
+    SDLNet_SocketSet set;
+    int numready;
+    char *str = NULL;
 
-	set = SDLNet_AllocSocketSet(1);
-	if(!done && !set)
-	{
-		printf("SDLNet_AllocSocketSet: %s\n", SDLNet_GetError());
-		SDLNet_Quit();
-		SDL_Quit();
-		done = 2;
-	}
+    set = SDLNet_AllocSocketSet(1);
+    if(!done && !set)
+    {
+        printf("SDLNet_AllocSocketSet: %s\n", SDLNet_GetError());
+        SDLNet_Quit();
+        SDL_Quit();
+        done = 2;
+    }
 
-	if(!done && SDLNet_TCP_AddSocket(set,sock) == -1)
-	{
-		printf("SDLNet_TCP_AddSocket: %s\n",SDLNet_GetError());
-		SDLNet_Quit();
-		SDL_Quit();
-		done = 3;
-	}
-	
-	while(!done)
-	{
-		numready = SDLNet_CheckSockets(set, (Uint32)-1);
-		if(numready == -1)
-		{
-			printf("SDLNet_CheckSockets: %s\n",SDLNet_GetError());
-			done = 4;
-			break;
-		}
+    if(!done && SDLNet_TCP_AddSocket(set,sock) == -1)
+    {
+        printf("SDLNet_TCP_AddSocket: %s\n",SDLNet_GetError());
+        SDLNet_Quit();
+        SDL_Quit();
+        done = 3;
+    }
 
-		if(numready && SDLNet_SocketReady(sock))
-		{
-			if(!getMsg(sock,&str))
-			{
-				char *errstr=SDLNet_GetError();
-				printf("getMsg: %s\n",strlen(errstr)?errstr:"Server disconnected");
-				done = 5;
-				break;
-			}
+    while(!done)
+    {
+        numready = SDLNet_CheckSockets(set, (Uint32)-1);
+        if(numready == -1)
+        {
+            printf("SDLNet_CheckSockets: %s\n",SDLNet_GetError());
+            done = 4;
+            break;
+        }
+
+        if(numready && SDLNet_SocketReady(sock))
+        {
+            if(!getMsg(sock,&str))
+            {
+                char *errstr=SDLNet_GetError();
+                printf("getMsg: %s\n",strlen(errstr)?errstr:"Server disconnected");
+                done = 5;
+                break;
+            }
             ProcessPacket(str, sock);
-		}
-	}
+        }
+    }
 
-	if(!done)
-		done = 1;
+    if(!done)
+        done = 1;
 
-	return 0;
+    return 0;
 }

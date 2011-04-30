@@ -113,7 +113,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="../../../dep/SDL_image/;../../../dep/SDL_net/;../../../include/client/;../../../dep/jpeg/include/"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -129,9 +130,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="SDL.lib SDLmain.lib SDL_ttf.lib wsock32.lib odbc32.lib odbccp32.lib sdl_net.lib SDL_gfx.lib"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="msvcrt.lib"
 				GenerateDebugInformation="true"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				OptimizeForWindows98="2"
 				TargetMachine="1"
 			/>
 			<Tool
